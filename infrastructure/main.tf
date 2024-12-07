@@ -10,6 +10,9 @@ terraform {
     google-beta = {
       source = "hashicorp/google-beta"
     }
+    prefect = {
+      source = "prefecthq/prefect"
+    }
   }
 }
 
@@ -60,4 +63,19 @@ module "terraform-backend" {
   kms_key_ring_name = "gcs"
   kms_key_name      = "terraform-backend"
   rotation_period   = "86400s"
+}
+
+module "prefect" {
+  source = "./modules/prefect"
+
+  gcp_project_id = var.gcp_project_id
+  gcp_project_region = var.gcp_project_region
+  gcp_registry_repo_name = "docker"
+  gcp_cloud_run_worker_name = "prefect-worker"
+  
+  prefect_account_id =  var.prefect_account_id
+  prefect_workspace_id = var.prefect_workspace_id
+  prefect_api_key = var.prefect_api_key
+  prefect_work_pool_name = "cloud-run-pool"
+  prefect_sa_name = "prefect-service-account"
 }
