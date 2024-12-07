@@ -34,12 +34,23 @@ jobs:
         with:
           workload_identity_provider: "${{ env.GCP_WORKLOAD_IDENTITY_POOL }}/providers/gh-provider"
           service_account: "cicdprocess@${{ env.GCP_PROJECT_ID }}.iam.gserviceaccount.com"
+      - id: secrets
+        name: "Fetch secrets from Google Cloud"
+        uses: "google-github-actions/get-secretmanager-secrets@v2"
+        with:
+          secrets: |-
+            PREFECT_API_KEY:projects/${{ env.GCP_PROJECT_ID }}/secrets/PREFECT_API_KEY
+            PREFECT_ACCOUNT_ID:projects/${{ env.GCP_PROJECT_ID }}/secrets/PREFECT_ACCOUNT_ID
+            PREFECT_WORKSPACE_ID:projects/${{ env.GCP_PROJECT_ID }}/secrets/PREFECT_WORKSPACE_ID
       - name: Apply Terraform
         run: |
           export TF_VAR_gcp_project_id=${{ env.GCP_PROJECT_ID }}
           export TF_VAR_gcp_project_number=${{ env.GCP_PROJECT_NUMBER }}
           export TF_VAR_gcp_project_region=${{ env.GCP_PROJECT_REGION }}
           export TF_VAR_gh_repo=${{ env.GH_REPO }}
+          export TF_VAR_prefect_api_key=${{ steps.secrets.outputs.PREFECT_API_KEY }}
+          export TF_VAR_prefect_account_id=${{ steps.secrets.outputs.PREFECT_ACCOUNT_ID }}
+          export TF_VAR_prefect_workspace_id=${{ steps.secrets.outputs.PREFECT_WORKSPACE_ID }}
           cd infrastructure
           terraform init
           terraform plan -out=tfplan
@@ -51,8 +62,6 @@ jobs:
       id-token: write
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
       - name: "Authenticate to Google Cloud"
         uses: google-github-actions/auth@v2
         with:
