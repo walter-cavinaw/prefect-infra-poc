@@ -21,8 +21,15 @@ resource "google_service_account" "cicd-sa" {
 }
 
 resource "google_project_iam_member" "cicd-sa" {
+  for_each = toset([
+    "roles/cloudkms.admin",
+    "roles/iam.serviceAccountAdmin",
+    "roles/storage.admin",
+    "roles/iam.workloadIdentityPoolAdmin",
+    "roles/resourcemanager.projectIamAdmin",
+  ])
+  role    = each.value
   project = var.gcp_project_id
-  role    = "roles/storage.admin"
   member  = "serviceAccount:${google_service_account.cicd-sa.email}"
 }
 
