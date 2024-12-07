@@ -4,7 +4,7 @@ from prefect.events import emit_event
 @task
 def trigger_event(event, param1, param2):
     logger = get_run_logger()
-    logger.info(f"Emitting event {event}...")
+    logger.info(f"Emitting event {event} with param1 = {param1} and param2 = {param2}...")
 
     emit_event(event=event, resource={"prefect.resource.id": "my-triggering-resource-id"}, payload={"param1": param1, "param2": param2})
 
