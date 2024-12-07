@@ -85,8 +85,8 @@ jobs:
         uses: PrefectHQ/actions-prefect-deploy@v4
         with:
           all-deployments: "true"
-          requirements-file-paths: ./requirements.txt
-          deployment-file-path: ./prefect.yaml
+          requirements-file-paths: ../requirements.txt
+          deployment-file-path: ../prefect.yaml
         env:
           PREFECT_API_KEY: ${{ steps.secrets.outputs.PREFECT_API_KEY }}
           PREFECT_API_URL: "https://api.prefect.cloud/api/accounts/${{ steps.secrets.outputs.PREFECT_ACCOUNT_ID }}/workspaces/${{ steps.secrets.outputs.PREFECT_WORKSPACE_ID }}"
