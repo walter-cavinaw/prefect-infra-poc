@@ -31,7 +31,8 @@ resource "google_project_iam_member" "cicd-sa" {
     "roles/iam.workloadIdentityPoolAdmin",
     "roles/resourcemanager.projectIamAdmin",
     "roles/secretmanager.admin",
-    "roles/artifactregistry.reader"
+    "roles/artifactregistry.admin",
+    "roles/run.admin"
   ])
   role    = each.value
   project = var.gcp_project_id

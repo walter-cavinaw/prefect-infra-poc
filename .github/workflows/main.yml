@@ -62,6 +62,8 @@ jobs:
       id-token: write
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
       - name: "Authenticate to Google Cloud"
         uses: google-github-actions/auth@v2
         with:
@@ -85,8 +87,8 @@ jobs:
         uses: PrefectHQ/actions-prefect-deploy@v4
         with:
           all-deployments: "true"
-          requirements-file-paths: ../requirements.txt
-          deployment-file-path: ../prefect.yaml
+          requirements-file-paths: ./requirements.txt
+          deployment-file-path: ./prefect.yaml
         env:
           PREFECT_API_KEY: ${{ steps.secrets.outputs.PREFECT_API_KEY }}
           PREFECT_API_URL: "https://api.prefect.cloud/api/accounts/${{ steps.secrets.outputs.PREFECT_ACCOUNT_ID }}/workspaces/${{ steps.secrets.outputs.PREFECT_WORKSPACE_ID }}"
