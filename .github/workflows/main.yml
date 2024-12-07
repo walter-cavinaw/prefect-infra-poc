@@ -58,7 +58,7 @@ jobs:
 
   deploy_flows:
     permissions:
-      # required to obtain Google Cloud service account credentials
+      contents: "read"
       id-token: write
     runs-on: ubuntu-latest
     steps:
