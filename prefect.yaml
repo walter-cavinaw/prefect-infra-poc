@@ -1,7 +1,3 @@
-# Welcome to your prefect.yaml file! You can use this file for storing and managing
-# configuration for deploying your flows. We recommend committing this file to source
-# control along with your flow code.
-
 # Generic metadata about this project
 name: prefect-gcp
 prefect-version: 3.1.5
@@ -23,10 +19,22 @@ push:
     image_name: '{{ build_image.image_name }}'
     tag: '{{ build_image.tag }}'
 
-# # pull section allows you to provide instructions for cloning this project in remote locations
-# pull:
-# - prefect.deployments.steps.set_working_directory:
-#     directory: /opt/prefect/prefect-gcp
+definitions:
+  work_pools:
+    my_cloud_run_work_pool: &my_cloud_run_work_pool
+      name: cloud-run-pool
+      work_queue_name: default
+      job_variables:
+        image: '{{ build_image.image }}'
+  schedules:
+    every_midnight: &every_midnight
+        cron: "0 0 * * *"
+        timezone: "Canada/Pacific"
+        active: true
+    every_monday_morning: &every_monday_morning
+        cron: "0 8 * * 1"
+        timezone: "Canada/Pacific"
+        active: true
 
 # the deployments section allows you to provide configuration for deploying flows
 deployments:
@@ -35,16 +43,44 @@ deployments:
   tags: []
   description: null
   schedules:
-    - cron: "0 0 * * *"
-      timezone: "America/Chicago"
-      active: true
-  flow_name: null
+    - *every_monday_morning
+    - *every_midnight
   entrypoint: flows/weather_flow.py:fetch_weather
   parameters:
     lat: 14.5994
     lon: 28.6731
-  work_pool:
-    name: cloud-run-pool
-    work_queue_name: default
-    job_variables:
-      image: '{{ build_image.image }}'
+  work_pool: *my_cloud_run_work_pool
+  
+- name: triggering_event_deploy
+  version: null
+  tags: []
+  description: null
+  schedules:
+    - *every_midnight
+  entrypoint: flows/triggering_event_flow.py:triggering_event_flow
+  work_pool: *my_cloud_run_work_pool
+
+- name: acting_on_event_deploy
+  version: null
+  tags: []
+  description: null
+  entrypoint: flows/acting_on_event_flow.py:acting_on_event_flow
+  parameters:
+    triggered_by_resource: "some_default_param_value"
+    param1: "some_default_param_value"
+    param2: "some_default_param_value"
+  work_pool: *my_cloud_run_work_pool
+  triggers:
+    - type: event
+      enabled: true
+      # this match enforces an action to be triggered only when the event was emitted by resource with this id
+      # more details here https://docs-3.prefect.io/v3/automate/events/custom-triggers#resource-matching
+      match:
+        prefect.resource.id: my-triggering-resource-id
+      expect:
+        - some.test.event
+      parameters:
+        triggered_by_resource: "{{ event.resource.id }}"
+        param1: "{{ event.payload.param1 }}"
+        param2: "{{ event.payload.param2 }}"
+

@@ -19,7 +19,7 @@ def mark_it_down(temp):
     )
 
 
-@flow
+@flow(name="Weather Flow")
 def fetch_weather(lat: float, lon: float):
     base_url = "https://api.open-meteo.com/v1/forecast/"
     weather = httpx.get(
