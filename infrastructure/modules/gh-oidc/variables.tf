@@ -46,7 +46,7 @@ variable "provider_description" {
 variable "attribute_condition" {
   type        = string
   description = "Workload Identity Pool Provider attribute condition expression. [More info](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/iam_workload_identity_pool_provider#attribute_condition)"
-  default     = "attribute.repository == assertion.repository && attribute.repository_owner == assertion.repository_owner"
+  default     = "attribute.repository == assertion.repository"
 }
 
 variable "attribute_mapping" {
@@ -55,7 +55,6 @@ variable "attribute_mapping" {
   default = {
     "google.subject"       = "assertion.sub"
     "attribute.actor"      = "assertion.actor"
-    "attribute.aud"        = "assertion.aud"
     "attribute.repository" = "assertion.repository"
   }
 }
