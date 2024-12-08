@@ -6,23 +6,6 @@ terraform {
   }
 }
 
-resource "google_service_account" "prefect-sa" {
-  project      = var.gcp_project_id
-  account_id   = var.prefect_sa_name
-  display_name = var.prefect_sa_name
-  description  = "Service account to use for the prefect worker"
-}
-
-resource "google_project_iam_member" "prefect-sa" {
-  for_each = toset([
-    "roles/iam.serviceAccountUser",
-    "roles/run.admin"
-  ])
-  role    = each.value
-  project = var.gcp_project_id
-  member  = "serviceAccount:${google_service_account.prefect-sa.email}"
-}
-
 resource "prefect_work_pool" "cloud-run-pool" {
   name              = var.prefect_work_pool_name
   type              = "cloud-run"
@@ -44,7 +27,7 @@ resource "google_cloud_run_service" "prefect_worker" {
       }
     }
     spec {
-      service_account_name = google_service_account.prefect-sa.email
+      service_account_name = var.prefect_sa_email
       containers {
         image = "prefecthq/prefect:3-latest"
         args = [

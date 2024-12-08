@@ -16,29 +16,6 @@ terraform {
   }
 }
 
-resource "google_service_account" "cicd-sa" {
-  project      = var.gcp_project_id
-  account_id   = "cicdprocess"
-  display_name = "cicdprocess"
-  description  = "CICD Processes including Github Actions"
-}
-
-resource "google_project_iam_member" "cicd-sa" {
-  for_each = toset([
-    "roles/cloudkms.admin",
-    "roles/iam.serviceAccountAdmin",
-    "roles/storage.admin",
-    "roles/iam.workloadIdentityPoolAdmin",
-    "roles/resourcemanager.projectIamAdmin",
-    "roles/secretmanager.admin",
-    "roles/artifactregistry.admin",
-    "roles/run.admin"
-  ])
-  role    = each.value
-  project = var.gcp_project_id
-  member  = "serviceAccount:${google_service_account.cicd-sa.email}"
-}
-
 module "gh-oidc" {
   source = "./modules/gh-oidc"
 
@@ -80,5 +57,5 @@ module "prefect" {
   prefect_workspace_id = var.prefect_workspace_id
   prefect_api_key = var.prefect_api_key
   prefect_work_pool_name = "cloud-run-pool"
-  prefect_sa_name = "prefect-service-account"
+  prefect_sa_email = google_service_account.prefect-sa.email
 }

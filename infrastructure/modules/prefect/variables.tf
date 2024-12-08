@@ -20,9 +20,9 @@ variable "prefect_work_pool_name" {
   type = string
 }
 
-variable "prefect_sa_name" {
+variable "prefect_sa_email" {
   type = string
-  description = "Name of service account that's used for the prefect worker"
+  description = "Email of service account that's used for the prefect worker"
 }
 
 variable "prefect_account_id" {
