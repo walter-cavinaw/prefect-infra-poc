@@ -12,6 +12,8 @@ resource "google_kms_crypto_key" "terraform-backend" {
   lifecycle {
     prevent_destroy = false
   }
+
+  depends_on = [ google_kms_key_ring.terraform-backend ]
 }
 
 resource "google_kms_crypto_key_iam_binding" "terraform-backend" {
@@ -20,6 +22,8 @@ resource "google_kms_crypto_key_iam_binding" "terraform-backend" {
   members = [
     "serviceAccount:service-${var.project_number}@gs-project-accounts.iam.gserviceaccount.com",
   ]
+
+  depends_on = [ google_kms_crypto_key.terraform-backend ]
 }
 
 resource "google_storage_bucket" "terraform-backend" {
@@ -36,7 +40,5 @@ resource "google_storage_bucket" "terraform-backend" {
     default_kms_key_name = google_kms_crypto_key.terraform-backend.id
   }
 
-  depends_on = [
-    google_kms_crypto_key_iam_binding.terraform-backend,
-  ]
+  depends_on = [ google_kms_crypto_key.terraform-backend ]
 }

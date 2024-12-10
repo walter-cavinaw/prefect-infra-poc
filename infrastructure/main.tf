@@ -16,6 +16,26 @@ terraform {
   }
 }
 
+module "project-setup" {
+  source = "./modules/project-setup"
+
+  project_id = var.gcp_project_id
+}
+
+module "terraform-backend" {
+  source = "./modules/terraform-backend"
+
+  project_id        = var.gcp_project_id
+  project_number    = var.gcp_project_number
+  project_region    = var.gcp_project_region
+  bucket_name       = var.terraform_backend_bucket_name
+  kms_key_ring_name = "gcs"
+  kms_key_name      = "terraform-backend"
+  rotation_period   = "86400s"
+
+  depends_on = [ module.project-setup ]
+}
+
 module "gh-oidc" {
   source = "./modules/gh-oidc"
 
@@ -26,23 +46,13 @@ module "gh-oidc" {
   provider_id           = "gh-provider"
   provider_display_name = "gh-provider"
   sa_mapping = {
-    (google_service_account.cicd-sa.account_id) = {
-      sa_name   = google_service_account.cicd-sa.name
+    (module.project-setup.cicd_sa_id) = {
+      sa_name   = module.project-setup.cicd_sa_name
       attribute = "attribute.repository/${var.gh_repo}"
     }
   }
-}
 
-module "terraform-backend" {
-  source = "./modules/terraform-backend"
-
-  project_id        = var.gcp_project_id
-  project_number    = var.gcp_project_number
-  project_region    = var.gcp_project_region
-  bucket_name       = "prefect-poc-terraform-backend"
-  kms_key_ring_name = "gcs"
-  kms_key_name      = "terraform-backend"
-  rotation_period   = "86400s"
+  depends_on = [ module.project-setup ]
 }
 
 module "prefect" {
@@ -57,5 +67,7 @@ module "prefect" {
   prefect_workspace_id = var.prefect_workspace_id
   prefect_api_key = var.prefect_api_key
   prefect_work_pool_name = "cloud-run-pool"
-  prefect_sa_email = google_service_account.prefect-sa.email
+  prefect_sa_email = module.project-setup.prefect_sa_email
+
+  depends_on = [ module.project-setup ]
 }

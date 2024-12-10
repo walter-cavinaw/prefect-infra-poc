@@ -20,6 +20,8 @@ resource "google_iam_workload_identity_pool_provider" "gh-oidc" {
     allowed_audiences = var.allowed_audiences
     issuer_uri        = var.issuer_uri
   }
+
+  depends_on = [ google_iam_workload_identity_pool.gh-oidc ]
 }
 
 resource "google_service_account_iam_member" "gh-oidc" {
@@ -27,4 +29,6 @@ resource "google_service_account_iam_member" "gh-oidc" {
   service_account_id = each.value.sa_name
   role               = "roles/iam.workloadIdentityUser"
   member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.gh-oidc.name}/${each.value.attribute}"
+
+  depends_on = [ google_iam_workload_identity_pool.gh-oidc, google_iam_workload_identity_pool_provider.gh-oidc ]
 }

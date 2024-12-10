@@ -18,6 +18,7 @@ resource "prefect_work_pool" "cloud-run-pool" {
 resource "google_cloud_run_service" "prefect_worker" {
   name     = var.gcp_cloud_run_worker_name
   location = var.gcp_project_region
+  depends_on = [ prefect_work_pool.cloud-run-pool ]
 
   template {
     metadata {
